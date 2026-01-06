@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuanto La Multa?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div id="custom-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <h3 style="color: #46178F; margin-top: 0;">¿Estás seguro?</h3>
+        <p id="modal-message" style="color: #666; font-size: 16px;">Esta acción no se puede deshacer.</p>
+        <div class="modal-buttons">
+            <button id="modal-btn-cancel" class="btn btn-primary" style="background-color: #888; box-shadow: 0 4px 0 #555;">CANCELAR</button>
+            <button id="modal-btn-confirm" class="btn btn-danger">SÍ, BORRAR</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="mobile-container">
+    <div class="header">
+        <div id="btn-back" class="back-btn hidden" onclick="volverAtras()"><</div>
+        <div class="logo">Cuanto La Multa?</div>
+    </div>
+
+    <div class="content">
+
+        <div id="screen-login" class="centered-screen">
+            <div class="card login-card">
+                <h2 id="loginTitle">Iniciar Sesión</h2>
+
+                <div id="nameContainer" class="hidden">
+                    <input type="text" id="usernameInput" placeholder="Tu Nombre (ej: Enzo)">
+                </div>
+
+                <input type="email" id="emailInput" placeholder="Email">
+                <input type="password" id="passwordInput" placeholder="Contraseña">
+
+                <div id="confirmPassContainer" class="hidden">
+                    <input type="password" id="confirmPasswordInput" placeholder="Repetir Contraseña">
+                </div>
+
+                <button id="loginBtn" class="btn btn-primary" onclick="procesarAuth()">ENTRAR</button>
+
+                <p id="toggleText" class="toggle-link" onclick="toggleLoginMode()">
+                    ¿No tienes cuenta? Regístrate aquí
+                </p>
+            </div>
+        </div>
+
+        <div id="screen-dashboard" class="hidden">
+
+            <div class="dashboard-header-card">
+                <h2 style="margin:0;">Mis Eventos</h2>
+                <small onclick="location.reload()" class="logout-btn">Salir</small>
+            </div>
+
+            <div id="lista-eventos-container"></div>
+            <button class="btn btn-success" onclick="mostrarCrearEvento()">+ CREAR NUEVO</button>
+        </div>
+
+        <div id="screen-create-event" class="hidden centered-screen">
+            <div class="card" style="width: 100%;">
+                <h2>Nuevo Evento</h2>
+                <input type="text" id="eventNameInput" placeholder="Nombre (Ej: Asado)">
+                <button class="btn btn-success" onclick="crearEvento()">CREAR</button>
+                <button class="btn btn-primary" onclick="volverDashboard()" style="background-color: #888; box-shadow: 0 4px 0 #555;">CANCELAR</button>
+            </div>
+        </div>
+
+        <div id="screen-event-detail" class="hidden">
+            <h2 id="titulo-evento-detalle" style="text-align: center;">Evento</h2>
+
+            <div id="balance-container" class="balance-box neutral">
+                Calculando saldo...
+            </div>
+
+            <button id="btn-ver-solucion" class="btn btn-warning hidden" onclick="mostrarSugerencias()">
+                VER CÓMO ARREGLAR
+            </button>
+
+            <h3 style="color: #46178F; margin-bottom: 15px;">Gastos Recientes</h3>
+            <div id="lista-gastos-container">
+                <p>No hay gastos aún.</p>
+            </div>
+
+            <div style="margin-top: 25px;">
+                <button class="btn btn-danger" onclick="mostrarCargarGasto()">CARGAR GASTO</button>
+                <button class="btn btn-primary" onclick="mostrarAgregarAmigo()">AGREGAR AMIGO</button>
+            </div>
+        </div>
+
+        <div id="screen-add-friend" class="hidden centered-screen">
+            <div class="card" style="width: 100%;">
+                <h2>Gestionar Amigos</h2>
+
+                <p style="color:#666; margin-bottom: 10px;">Agregar nuevo:</p>
+                <div style="display:flex; gap:5px; margin-bottom: 20px;">
+                    <input type="text" id="friendNameInput" placeholder="Nombre (Ej: Manolo)" style="margin:0;">
+                    <button class="btn btn-success" onclick="guardarAmigo()" style="width: auto; margin:0;">+</button>
+                </div>
+
+                <h3 style="text-align:left; font-size:16px; color:#46178F; border-bottom:1px solid #eee; padding-bottom:5px;">Participantes Actuales:</h3>
+
+                <div id="lista-participantes-gestion" style="text-align:left; max-height: 200px; overflow-y:auto; margin-bottom:15px;">
+                </div>
+
+                <button class="btn btn-primary" onclick="volverDetalleEvento()" style="background-color: #888; box-shadow: 0 4px 0 #555;">VOLVER</button>
+            </div>
+        </div>
+
+        <div id="screen-add-expense" class="hidden centered-screen">
+            <div class="card" style="width: 100%; text-align: left;">
+                <h2 style="text-align: center;">Nuevo Gasto</h2>
+
+                <label>Título:</label>
+                <input type="text" id="expenseTitle" placeholder="Ej: Supermercado">
+
+                <label>Monto ($):</label>
+                <input type="number" id="expenseAmount" placeholder="0.00">
+
+                <label>¿Quién pagó?</label>
+                <select id="payerSelect"></select>
+
+                <label style="margin-top: 15px;">¿Quiénes dividen?</label>
+                <div id="consumersContainer" style="margin-bottom: 20px;">
+                </div>
+
+                <button class="btn btn-danger" onclick="guardarGasto()">GUARDAR GASTO</button>
+                <button class="btn btn-primary" onclick="volverDetalleEvento()" style="background-color: #888; box-shadow: 0 4px 0 #555;">CANCELAR</button>
+            </div>
+        </div>
+
+        <div id="screen-sugerencias" class="hidden">
+            <h2 style="text-align: center;">¿Cómo arreglar esto?</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 25px;">Sigue estos pasos para quedar a mano.</p>
+            <div id="lista-sugerencias-container">
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="js/app.js"></script>
+
+</body>
+</html>
