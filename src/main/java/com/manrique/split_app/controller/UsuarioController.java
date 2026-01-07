@@ -48,7 +48,7 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(@RequestBody Usuario loginRequest) {
         // 1. Buscamos al usuario por su email
-        Usuario usuarioEncontrado = usuarioRepository.findByEmail(loginRequest.getEmail());
+        Usuario usuarioEncontrado = usuarioRepository.findByEmail(loginRequest.getEmail()).orElse(null);
 
         // 2. Si no existe, error
         if (usuarioEncontrado == null) {
@@ -65,4 +65,3 @@ public class UsuarioController {
     }
 }
 
-}
