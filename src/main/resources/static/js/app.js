@@ -93,39 +93,51 @@ async function procesarAuth() {
         return;
     }
 
-    let nombre = "Usuario";
+    // --- MODO LOGIN (ENTRAR) ---
+    if (isLoginMode) {
+        try {
+            const resp = await fetch('/api/usuarios/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: password })
+            });
 
-    if (!isLoginMode) {
-        nombre = document.getElementById('usernameInput').value;
-        const confirmPassword = document.getElementById('confirmPasswordInput').value;
-
-        if(!nombre) {
-            showToast("¡Para registrarte necesitas un nombre!", "error");
-            return;
-        }
-
-        if(password !== confirmPassword) {
-            showToast("Las contraseñas no coinciden", "error");
-            return;
-        }
+            if(resp.ok) {
+                const usuario = await resp.json();
+                usuarioActualId = usuario.id;
+                showToast(`¡Hola de nuevo, ${usuario.nombre}!`, "success");
+                cargarMisEventos();
+            } else {
+                showToast("Email o contraseña incorrectos", "error");
+            }
+        } catch(e) { console.error(e); showToast("Error de conexión", "error"); }
     }
 
-    try {
-        const respuesta = await fetch('/api/usuarios', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre: nombre, email: email, password: password, fotoUrl: null })
-        });
+    // --- MODO REGISTRO (CREAR CUENTA) ---
+    else {
+        const nombre = document.getElementById('usernameInput').value;
+        const confirmPassword = document.getElementById('confirmPasswordInput').value;
 
-        if(respuesta.ok) {
-            const usuario = await respuesta.json();
-            usuarioActualId = usuario.id;
-            showToast(`¡Bienvenido, ${usuario.nombre}!`, "success");
-            cargarMisEventos();
-        } else {
-            showToast("Credenciales incorrectas", "error");
-        }
-    } catch (error) { console.error(error); showToast("Error de conexión", "error"); }
+        if(!nombre) { showToast("Necesitas un nombre", "error"); return; }
+        if(password !== confirmPassword) { showToast("Las contraseñas no coinciden", "error"); return; }
+
+        try {
+            const resp = await fetch('/api/usuarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre: nombre, email: email, password: password, fotoUrl: null })
+            });
+
+            if(resp.ok) {
+                const usuario = await resp.json();
+                usuarioActualId = usuario.id;
+                showToast(`¡Bienvenido a bordo, ${usuario.nombre}!`, "success");
+                cargarMisEventos();
+            } else {
+                showToast("Error: Quizás el email ya existe", "error");
+            }
+        } catch (error) { console.error(error); showToast("Error de conexión", "error"); }
+    }
 }
 
 // --- 2. DASHBOARD ---
