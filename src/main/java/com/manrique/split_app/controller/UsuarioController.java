@@ -1,10 +1,9 @@
 package com.manrique.split_app.controller;
 
-import com.manrique.split_app.dto.CrearUsuarioDTO;
 import com.manrique.split_app.entity.Evento;
 import com.manrique.split_app.entity.Usuario;
 import com.manrique.split_app.repository.UsuarioRepository;
-import com.manrique.split_app.service.UsuarioService;
+import com.manrique.split_app.repository.EventoRepository; // <--- IMPORTANTE
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,52 +15,41 @@ import java.util.List;
 public class UsuarioController {
 
     @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @PostMapping
-    public ResponseEntity<Usuario> crear(@RequestBody CrearUsuarioDTO dto) {
-        return ResponseEntity.ok(usuarioService.crearUsuario(dto));
-    }
-
     @Autowired
-    private com.manrique.split_app.repository.ParticipanteRepository participanteRepository;
+    private EventoRepository eventoRepository; // <--- Inyectamos esto
 
-    @GetMapping("/{id}/eventos") // URL: /api/usuarios/1/eventos
-    public ResponseEntity<List<Evento>> obtenerMisEventos(@PathVariable Long id) {
-        // 1. Buscamos dónde participa este usuario
-        List<com.manrique.split_app.entity.Participante> participaciones = participanteRepository.findByUsuarioId(id);
-
-        // 2. Sacamos la lista de Eventos de esas participaciones
-        List<com.manrique.split_app.entity.Evento> misEventos = participaciones.stream()
-                .map(p -> p.getEvento())
-                .collect(java.util.stream.Collectors.toList());
-
-        return ResponseEntity.ok(misEventos);
+    @GetMapping
+    public List<Usuario> getAllUsuarios() {
+        return usuarioRepository.findAll();
     }
 
-    // ... otros métodos ...
+    @PostMapping
+    public Usuario createUsuario(@RequestBody Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
 
-    // NUEVO: Endpoint específico para Login
+    // Login corregido (con .orElse(null))
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(@RequestBody Usuario loginRequest) {
-        // 1. Buscamos al usuario por su email
         Usuario usuarioEncontrado = usuarioRepository.findByEmail(loginRequest.getEmail()).orElse(null);
 
-        // 2. Si no existe, error
         if (usuarioEncontrado == null) {
-            return ResponseEntity.status(401).body(null); // 401 = No autorizado
+            return ResponseEntity.status(401).body(null);
         }
 
-        // 3. Si existe, verificamos la contraseña
-        // (Nota: En una app real aquí se encriptaría, pero para empezar está bien así)
         if (usuarioEncontrado.getPassword().equals(loginRequest.getPassword())) {
             return ResponseEntity.ok(usuarioEncontrado);
         } else {
-            return ResponseEntity.status(401).body(null); // Contraseña mal
+            return ResponseEntity.status(401).body(null);
         }
     }
-}
 
+    // Endpoint corregido: Busca en eventoRepository en vez de usar .getEventos()
+    @GetMapping("/{id}/eventos")
+    public ResponseEntity<List<Evento>> getEventosPorUsuario(@PathVariable Long id) {
+        List<Evento> eventos = eventoRepository.findByCreadorId(id);
+        return ResponseEntity.ok(eventos);
+    }
+}
