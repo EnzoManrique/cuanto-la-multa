@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface EventoRepository extends JpaRepository<Evento, Long> {
-    List<Evento> findByCreadorId(Long creadorId);
+    List<Evento> findByCreador_Id(Long creadorId);
 }

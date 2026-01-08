@@ -49,7 +49,8 @@ public class UsuarioController {
     // Endpoint corregido: Busca en eventoRepository en vez de usar .getEventos()
     @GetMapping("/{id}/eventos")
     public ResponseEntity<List<Evento>> getEventosPorUsuario(@PathVariable Long id) {
-        List<Evento> eventos = eventoRepository.findByCreadorId(id);
+        // CAMBIO AQUÍ: Agrega el guion bajo también
+        List<Evento> eventos = eventoRepository.findByCreador_Id(id);
         return ResponseEntity.ok(eventos);
     }
 }
