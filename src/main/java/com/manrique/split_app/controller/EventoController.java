@@ -3,12 +3,18 @@ package com.manrique.split_app.controller;
 import com.manrique.split_app.dto.BalanceDTO;
 import com.manrique.split_app.dto.CrearEventoDTO;
 import com.manrique.split_app.entity.Evento;
+import com.manrique.split_app.entity.Usuario;
 import com.manrique.split_app.repository.EventoRepository;
+import com.manrique.split_app.repository.UsuarioRepository;
 import com.manrique.split_app.service.EventoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+
 import com.manrique.split_app.dto.SugerenciaDeudaDTO;
 
 @RestController // Dice: "Yo hablo JSON y recibo peticiones web"
@@ -22,13 +28,29 @@ public class EventoController {
     private EventoRepository eventoRepository;
 
     // Cuando alguien mande un POST a /api/eventos...
-    @PostMapping
-    public ResponseEntity<Evento> crear(@RequestBody CrearEventoDTO dto) {
-        // ... llamamos al servicio para que haga el trabajo sucio
-        Evento eventoCreado = eventoService.crearEvento(dto);
+    @Autowired
+    private UsuarioRepository usuarioRepository; // Necesitamos esto para buscar al dueño
 
-        // ... y respondemos "200 OK" con el evento creado
-        return ResponseEntity.ok(eventoCreado);
+    @PostMapping
+    public ResponseEntity<Evento> createEvento(@RequestBody Map<String, Object> payload) {
+        // 1. Sacamos los datos del JSON manual (porque viene mezclado)
+        String nombre = (String) payload.get("nombre");
+        Integer creadorId = (Integer) payload.get("creadorId");
+
+        // 2. Creamos el evento
+        Evento nuevoEvento = new Evento();
+        nuevoEvento.setNombre(nombre);
+        nuevoEvento.setFecha(LocalDate.now());
+
+        // 3. Buscamos al usuario y se lo asignamos
+        if (creadorId != null) {
+            Usuario usuario = usuarioRepository.findById(Long.valueOf(creadorId)).orElse(null);
+            nuevoEvento.setCreador(usuario);
+        }
+
+        // 4. Guardamos
+        Evento eventoGuardado = eventoRepository.save(nuevoEvento);
+        return ResponseEntity.ok(eventoGuardado);
     }
 
     @GetMapping("/{id}/balance") // La URL será: /api/eventos/1/balance
